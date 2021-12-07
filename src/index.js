@@ -1,0 +1,41 @@
+const express = require("express");
+const mongoose = require("mongoose");
+const app = express();
+require("dotenv").config();
+const CategoriaRoutes = require("./routes/Categoria");
+const path = require("path");
+const port = process.env.PORT || 10801;
+//swagger
+const swaggerUI = require("swagger-ui-express");
+const swaggerJsDoc = require("swagger-jsdoc");
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Librerias Apis - CERTUS",
+      version: "1.0.0",
+      //description: "Demo de Librerias de Ventas API",
+    },
+    servers: [
+      {
+        url: "http://localhost:10801",
+      },
+    ],
+  },
+  apis: [`${path.join(__dirname, "./routes/*.js")}`],
+};
+//middleware
+app.use(express.json());
+app.use("/api", CategoriaRoutes);
+
+app.use("/api-doc", swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(options)));
+app.use("/", (req, res) => {
+  res.send("bienvenido a nuestra api");
+});
+//conexion a la BD
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log("Conectado a MongoDB Atlas"))
+  .catch((error) => console.log(error.message));
+//puerto de escucha
+app.listen(port, () => console.log("server escuchando en el puerto", port));
