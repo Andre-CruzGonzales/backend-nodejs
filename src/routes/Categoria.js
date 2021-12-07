@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const categoriaSchema = require("../models/Categoria");
 //creacion de articulos
+
 /**
  * @swagger
  * components:
