@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 require("dotenv").config();
 const CategoriaRoutes = require("./routes/Categoria");
+const ProductoRoutes = require("./routes/Producto");
 const path = require("path");
 const port = process.env.PORT || 10801;
 //swagger
@@ -37,6 +38,7 @@ app.use(cors(corsOptions));
 //middleware
 app.use(express.json());
 app.use("/api", CategoriaRoutes);
+app.use("/api", ProductoRoutes);
 
 app.use("/api-doc", swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(options)));
 app.use("/", (req, res) => {
