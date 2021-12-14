@@ -8,6 +8,7 @@ const port = process.env.PORT || 10801;
 //swagger
 const swaggerUI = require("swagger-ui-express");
 const swaggerJsDoc = require("swagger-jsdoc");
+const cors = require("cors");
 const options = {
   definition: {
     openapi: "3.0.0",
@@ -24,6 +25,15 @@ const options = {
   },
   apis: [`${path.join(__dirname, "./routes/*.js")}`],
 };
+//acceso publico al server de imagenes
+app.use("/app", express.static("public"));
+// cors
+
+var corsOptions = {
+  origin: "*", // Reemplazar con dominio
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+app.use(cors(corsOptions));
 //middleware
 app.use(express.json());
 app.use("/api", CategoriaRoutes);
@@ -32,6 +42,7 @@ app.use("/api-doc", swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(options)));
 app.use("/", (req, res) => {
   res.send("bienvenido a nuestra api");
 });
+
 //conexion a la BD
 mongoose
   .connect(process.env.MONGODB_URI)

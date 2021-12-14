@@ -1,53 +1,63 @@
 const express = require("express");
+const multer = require("multer");
 const router = express.Router();
 const categoriaSchema = require("../models/Categoria");
+const path = require("path");
+let storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/files");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+const upload = multer({
+  storage: storage,
+});
 //creacion de articulos
 
 /**
  * @swagger
  * components:
  *  schemas:
- *      Articulo:
+ *      Categoria:
  *          type: object
  *          properties:
  *              nombre:
  *                  type: string
- *                  description: El nombre del articulo
- *              precio:
- *                  type: number,
- *                  description: El precio del articulo
- *              marca:
+ *                  description: El nombre de la categoria
+ *              file:
+ *                  type: file,
+ *                  description: La imagen de la categoria
+ *              estado:
  *                  type: string
- *                  description: La marca del articulo
- *              stock:
- *                  type: number
- *                  description: El stock existente del articulo
+ *                  description: El estado de la categoria
+ *
  *          required:
  *              - nombre
- *              - precio
- *              - marca
- *              - stock
+ *              - file
+ *              - estado
+ *
  *          example:
- *              nombre: Lavadora
- *              precio: 1540.00
- *              marca: LG
- *              stock: 15
+ *              nombre: Categoria 1
+ *              file: multipart
+ *              estado: A
  *
  */
 
 /**
  * @swagger
  * tags:
- *  name: Articulo
- *  description: API Lista de Articulos
+ *  name: Categoria
+ *  description: API Lista de Categorias
  */
 
 /**
  * @swagger
- * /api/users:
+ * /api/categorias/create:
  *  post:
- *      summary: crea un nuevo articulo
- *      tags: [Articulo]
+ *      summary: crea un nueva categoria
+ *      tags: [Categoria]
  *      requestBody:
  *          required: true
  *          content:
@@ -57,11 +67,15 @@ const categoriaSchema = require("../models/Categoria");
  *                  $ref: '#/components/schemas/Articulo'
  *      responses:
  *          200:
- *              description: nuevo articulo creado!
+ *              description: nueva categoria creado!
  *
  *
  */
-router.post("/categorias/create", (req, res) => {
+router.post("/categorias/create", upload.single("file"), (req, res) => {
+  const host = req.protocol + "://" + req.get("host");
+  const imagen = `${host}/app/files/${req.file.filename}`;
+  console.log(imagen);
+  req.body.imagen = imagen;
   const categoria = categoriaSchema(req.body);
   categoria
     .save()
@@ -81,11 +95,23 @@ router.get("/categorias/get/:id", (req, res) => {
     .then((data) => res.json(data))
     .catch((error) => res.json({ message: error.message }));
 });
-router.put("/categorias/update/:id", (req, res) => {
+router.put("/categorias/update/:id", upload.single("file"), (req, res) => {
+  const host = req.protocol + "://" + req.get("host");
+
   const { id } = req.params;
-  const { nombre } = req.body;
+  const { nombre } = req.body.nombre;
+
+  //console.log(imagen);
   categoriaSchema
-    .updateOne({ _id: id }, { $set: { nombre } })
+    .updateOne(
+      { _id: id },
+      {
+        $set: {
+          nombre: nombre,
+          imagen: `${host}/app/files/${req.file.filename}`,
+        },
+      }
+    )
     .then((data) => res.json(data))
     .catch((error) => res.json({ message: error }));
 });
