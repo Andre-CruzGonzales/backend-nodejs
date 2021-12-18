@@ -29,7 +29,8 @@ router.post("/productos/create", upload.single("file"), (req, res) => {
 });
 router.get("/productos/get", (req, res) => {
   productoSchema
-    .find({ estado: "A" })
+    //.find({ estado: "A" })
+    .find()
     .populate("categoria")
 
     .then((data) => res.json(data))
@@ -39,28 +40,45 @@ router.get("/productos/get/:id", (req, res) => {
   const { id } = req.params;
   productoSchema
     .findById(id)
+    .populate("categoria")
     .then((data) => res.json(data))
     .catch((error) => res.json({ message: error.message }));
 });
 router.put("/productos/update/:id", upload.single("file"), (req, res) => {
   const host = req.protocol + "://" + req.get("host");
-
-  const { id } = req.params;
-  const { nombre } = req.body.nombre;
-
+  const file = req.file;
   //console.log(imagen);
-  productoSchema
-    .updateOne(
-      { _id: id },
-      {
-        $set: {
-          nombre: nombre,
-          imagen: `${host}/app/files/${req.file.filename}`,
-        },
-      }
-    )
-    .then((data) => res.json(data))
-    .catch((error) => res.json({ message: error }));
+  const { id } = req.params;
+  if (file) {
+    productoSchema
+      .updateOne(
+        { _id: id },
+        {
+          $set: {
+            nombre: req.body.nombre,
+            imagen: `${host}/app/files/${req.file.filename}`,
+            descripcion: req.body.descripcion,
+            categoria: req.body.categoria,
+          },
+        }
+      )
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  } else {
+    productoSchema
+      .updateOne(
+        { _id: id },
+        {
+          $set: {
+            nombre: req.body.nombre,
+            descripcion: req.body.descripcion,
+            categoria: req.body.categoria,
+          },
+        }
+      )
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  }
 });
 router.delete("/categorias/delete/:id", (req, res) => {
   const { id } = req.params;
@@ -74,6 +92,28 @@ router.delete("/categorias/destroy/:id", (req, res) => {
   const { id } = req.params;
   productoSchema
     .remove({ _id: id })
+    .then((data) => res.json(data))
+    .catch((error) => res.json({ message: error }));
+});
+router.put("/productos/visibility/:id", (req, res) => {
+  const { id } = req.params;
+  let estado = "";
+  if (req.body.estado === "A") {
+    estado = "A";
+  }
+  if (req.body.estado === "I") {
+    estado = "I";
+  }
+  console.log("estadooo: " + estado);
+  productoSchema
+    .updateOne(
+      { _id: id },
+      {
+        $set: {
+          estado: estado,
+        },
+      }
+    )
     .then((data) => res.json(data))
     .catch((error) => res.json({ message: error }));
 });

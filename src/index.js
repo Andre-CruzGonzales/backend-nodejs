@@ -4,7 +4,12 @@ const app = express();
 require("dotenv").config();
 const CategoriaRoutes = require("./routes/Categoria");
 const ProductoRoutes = require("./routes/Producto");
+const UsuarioRoutes = require("./routes/Usuario");
+const CatalogoRoutes = require("./routes/Catalogo");
 const path = require("path");
+const verifyToken = require("./routes/ValidateToken");
+//prueba
+const prueba = require("./routes/Prueba");
 const port = process.env.PORT || 10801;
 //swagger
 const swaggerUI = require("swagger-ui-express");
@@ -37,8 +42,13 @@ var corsOptions = {
 app.use(cors(corsOptions));
 //middleware
 app.use(express.json());
+
 app.use("/api", CategoriaRoutes);
 app.use("/api", ProductoRoutes);
+app.use("/api", UsuarioRoutes);
+app.use("/api", verifyToken, CatalogoRoutes);
+app.use("/api", verifyToken, prueba);
+//app.use("/api/auth", );
 
 app.use("/api-doc", swaggerUI.serve, swaggerUI.setup(swaggerJsDoc(options)));
 app.use("/", (req, res) => {

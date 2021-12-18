@@ -3,6 +3,7 @@ const multer = require("multer");
 const router = express.Router();
 const categoriaSchema = require("../models/Categoria");
 const path = require("path");
+const { find } = require("../models/Categoria");
 let storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/files");
@@ -84,7 +85,8 @@ router.post("/categorias/create", upload.single("file"), (req, res) => {
 });
 router.get("/categorias/get", (req, res) => {
   categoriaSchema
-    .find({ estado: "A" })
+    //.find({ estado: "A" })
+    .find()
     .then((data) => res.json(data))
     .catch((error) => res.json({ message: error.message }));
 });
@@ -97,18 +99,58 @@ router.get("/categorias/get/:id", (req, res) => {
 });
 router.put("/categorias/update/:id", upload.single("file"), (req, res) => {
   const host = req.protocol + "://" + req.get("host");
-
+  const file = req.file;
   const { id } = req.params;
-  const { nombre } = req.body.nombre;
-
+  //const { nombre } = req.body.nombre;
+  //console.log(file);
   //console.log(imagen);
+  //console.log(req.body.nombre);
+  if (!file) {
+    console.log("ingreso a no file");
+    categoriaSchema
+      .updateOne(
+        { _id: id },
+        {
+          $set: {
+            nombre: req.body.nombre,
+          },
+        }
+      )
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  }
+  if (file) {
+    console.log("ingresa a file");
+    categoriaSchema
+      .updateOne(
+        { _id: id },
+        {
+          $set: {
+            nombre: req.body.nombre,
+            imagen: `${host}/app/files/${req.file.filename}`,
+          },
+        }
+      )
+      .then((data) => res.json(data))
+      .catch((error) => res.json({ message: error }));
+  }
+});
+router.put("/categorias/visibility/:id", (req, res) => {
+  const { id } = req.params;
+  let estado = "";
+  if (req.body.estado === "A") {
+    estado = "A";
+  }
+  if (req.body.estado === "I") {
+    estado = "I";
+  }
+  console.log("estadooo: " + estado);
   categoriaSchema
     .updateOne(
       { _id: id },
       {
         $set: {
-          nombre: nombre,
-          imagen: `${host}/app/files/${req.file.filename}`,
+          estado: estado,
         },
       }
     )
