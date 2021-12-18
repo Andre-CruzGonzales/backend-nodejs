@@ -26,7 +26,7 @@ router.post("/usuarios/create", async (req, res) => {
   if (isEmailExist) {
     return res.status(400).json({ error: "Email ya registrado" });
   }
-  // hash contraseña
+  // hash contraseña con 10 saltos
   const salt = await bcrypt.genSalt(10);
   const password = await bcrypt.hash(req.body.password, salt);
   const usuario = usuarioSchema({
